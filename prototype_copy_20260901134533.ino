@@ -1,6 +1,6 @@
 #include <QTRSensors.h>
 #include <SD.h>
-#include <L298NX2.h>
+#include <L298N.h>
 
 //line sennsor array
 QTRSensors qtr;
@@ -16,29 +16,27 @@ const int echo = A1;
 
   // Define color sensor pins
  
-#define S0 6
-#define S1 5
-#define S2 8
-#define S3 1
-#define sensorOut 7
+#define S0 5
+#define S1 6
+#define S2 7
+#define S3 8
+#define sensorOut 9
 //Motor A
-int IN1 = 4; int IN2 = 2;
+int IN1 = 1; int IN2 = 2;
 
 //Motor B
-int IN3 = 3; int IN4 = 0;
+int IN3 = 3; int IN4 = 4;
 //motor pin assignment
-              //       motor A            motor B
-              // |------------------||------------------|
-L298NX2 myMotors(IN1, IN2, IN3, IN4);
+L298N myMotors( IN3, IN4);
 // Calibration Values
 // Get these from Calibration Sketch
  
-int redMin = 25; // Red minimum value
-int redMax = 197; // Red maximum value
-int greenMin = 26; // Green minimum value
-int greenMax = 205; // Green maximum value
-int blueMin = 26; // Blue minimum value
-int blueMax = 196; // Blue maximum value
+int redMax = 19; // Red maximum value
+int redMin = 243; // Red minimum value
+int greenMax = 21; // Green maximum value
+int greenMin = 323; // Green minimum value
+int blueMax = 18; // Blue maximum value
+int blueMin = 269; // Blue minimum value
  
 // Variables for Color Pulse Width Measurements
  
@@ -51,9 +49,9 @@ int bluePW = 0;
 int redValue;
 int greenValue;
 int blueValue;
- 
 
- 
+
+
 //SD card reader
 File myFile;
 
@@ -64,35 +62,47 @@ void setup()
 
 {
   Serial.begin(9600);
-  LineSensorSetup();
-  SDCardSetup();
-  ColourSensorSetup();
-  MotorSetup();
-}
-
-void MotorSetup(){
-
-    pinMode(IN1, OUTPUT);
-    pinMode(IN2, OUTPUT);
-
-    pinMode(IN3, OUTPUT);
-    pinMode(IN4, OUTPUT);
-
-}
-
-void LineSensorSetup() {
-  // configure the sensors
 
   qtr.setTypeRC();
 
+  pinMode(CSPin, OUTPUT);
+
   qtr.setSensorPins((const uint8_t[]){A2, A3, A4, A5}, SensorCount);
 
-}
+  //motor pin configuration
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
 
-void SDCardSetup(){
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+ // configure the sensors
+
+  // Set S0 - S3 as outputs
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  
+  // Set Sensor output as input
+  pinMode(sensorOut, INPUT);
+  
+  // Set Frequency scaling to 20%
+  digitalWrite(S0,HIGH);
+  digitalWrite(S1,LOW);
+
+  myMotors.forward();
+      for (int i = 0; i < 250; i++)
+    {   
+        
+
+        qtr.calibrate();
+        delay(20);
+    }
 
 
-  Serial.print("Initializing SD card...");
+
+  Serial.println("Initializing SD card...");
 
   
 
@@ -102,7 +112,7 @@ void SDCardSetup(){
 
   // or the SD library functions will not work. 
 
-   pinMode(CSPin, OUTPUT);\
+   
 
     if (!SD.begin(CSPin)) {
 
@@ -113,14 +123,21 @@ void SDCardSetup(){
   }
 
   Serial.println("initialization done.");
+
 }
+
+
+ 
+
+
+
 
 void loop()
 
 {
   LineSensor();
-  ColourSensorCalibration();
-
+  ColourSensor();
+  FollowLine();
 }
 
 void LineSensor() {
@@ -150,19 +167,14 @@ void LineSensor() {
 
   delay(250);
 }
-void GoStraight(){
 
+
+void FollowLine(){
+  if 
 }
 
-void GoLeft(){
 
-}
-
-void GoRight(){
-  
-}
-
-void ColourSensorCalibration(){
+void ColourSensor(){
   // Read Red value
   redPW = getRedPW();
   // Map to value from 0-255
@@ -238,19 +250,4 @@ int getBluePW() {
   // Return the value
   return PW;
  
-}
-void ColourSensorSetup() {
- 
-  // Set S0 - S3 as outputs
-  pinMode(S0, OUTPUT);
-  pinMode(S1, OUTPUT);
-  pinMode(S2, OUTPUT);
-  pinMode(S3, OUTPUT);
-  
-  // Set Sensor output as input
-  pinMode(sensorOut, INPUT);
-  
-  // Set Frequency scaling to 20%
-  digitalWrite(S0,HIGH);
-  digitalWrite(S1,LOW);
 }
