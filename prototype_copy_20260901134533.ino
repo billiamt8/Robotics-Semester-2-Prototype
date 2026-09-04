@@ -21,12 +21,14 @@ const int echo = A1;
 #define S2 7
 #define S3 8
 #define sensorOut 9
-//Motor A
-int IN1 = 1; int IN2 = 2;
+// //Motor A
+// int IN1 = 1; int IN2 = 2;
 
 //Motor B
 int IN3 = 3; int IN4 = 4;
 //motor pin assignment
+              //       motor A            motor B
+              // |------------------||------------------|
 L298N myMotors( IN3, IN4);
 // Calibration Values
 // Get these from Calibration Sketch
@@ -70,8 +72,8 @@ void setup()
   qtr.setSensorPins((const uint8_t[]){A2, A3, A4, A5}, SensorCount);
 
   //motor pin configuration
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
+  // pinMode(IN1, OUTPUT);
+  // pinMode(IN2, OUTPUT);
 
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
@@ -91,8 +93,7 @@ void setup()
   digitalWrite(S0,HIGH);
   digitalWrite(S1,LOW);
 
-  myMotors.forward();
-      for (int i = 0; i < 250; i++)
+    for (int i = 0; i < 250; i++)
     {   
         
 
@@ -135,7 +136,7 @@ void setup()
 void loop()
 
 {
-  LineSensor();
+  //LineSensor();
   ColourSensor();
   FollowLine();
 }
@@ -165,12 +166,31 @@ void LineSensor() {
 
 
 
-  delay(250);
+
 }
 
 
 void FollowLine(){
-  if 
+  uint16_t position = qtr.readLineBlack(sensorValues);  
+    for (uint8_t i = 0; i < SensorCount; i++)
+    {
+      Serial.print(sensorValues[i]);
+      Serial.print('\t');
+    }
+    Serial.println(position); 
+
+     if(position>1000)  
+    {
+        myMotors.forward();
+   
+    }
+
+
+    if(position<1000)
+    {  
+        myMotors.backward();
+
+    }
 }
 
 
