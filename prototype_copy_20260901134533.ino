@@ -2,6 +2,14 @@
 #include <SD.h>
 #include <L298N.h>
 
+//ultrasonic snesor variables
+const int trigPin = A0;
+const int echoPin = A1;
+
+long duration;
+int distance;
+
+
 //line sennsor array
 QTRSensors qtr;
 
@@ -30,6 +38,8 @@ int IN3 = 3; int IN4 = 4;
               //       motor A            motor B
               // |------------------||------------------|
 L298N myMotors( IN3, IN4);
+
+
 // Calibration Values
 // Get these from Calibration Sketch
  
@@ -64,6 +74,8 @@ void setup()
 
 {
   Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
   qtr.setTypeRC();
 
@@ -139,6 +151,25 @@ void loop()
   //LineSensor();
   ColourSensor();
   FollowLine();
+  UltrasonicSensor();
+}
+
+void UltrasonicSensor(){
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  if(distance<5){
+    myMotors.stop();
+  }
+
 }
 
 void LineSensor() {
